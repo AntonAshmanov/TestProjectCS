@@ -25,14 +25,17 @@ expression<binary_expression<E1, OP, E2> >
                         const OP &op, const expression<E2> &expr2) : 
                     expr1(expr1.self()), op(op), expr2(expr2.self()){}
 
-    double operator()(double x) const { 
-        return op(expr1(x), expr2(x)); 
-    }
-
+    
     private: 
         const E1 expr1; 
         const OP op; 
         const E2 expr2; 
 }; 
+
+template<typename type_left, typename type_right>
+auto operator+(const expression<type_left>& left, const expression<type_right>& right) {
+    add add_op;
+    return binary_expression(left, add_op, right);
+} 
 
 #endif
