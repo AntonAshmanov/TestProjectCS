@@ -15,6 +15,7 @@ int main() {
     matrix<void> A, B, C;
 
     auto add_op = A + B + C;
+    auto add_op = A + B + C;
 
 
     return 0;
