@@ -30,12 +30,28 @@ expression<binary_expression<E1, OP, E2> >
         const E1 expr1; 
         const OP op; 
         const E2 expr2; 
-}; 
+};
+
+struct constant : expression<constant> 
+{ 
+    constant(double value) : value(value){} 
+    double operator()(double x) const { 
+        return value;
+    } 
+    private: 
+    double value; 
+};
 
 template<typename type_left, typename type_right>
 auto operator+(const expression<type_left>& left, const expression<type_right>& right) {
     add add_op;
     return binary_expression(left, add_op, right);
+} 
+
+template<typename type_right>
+auto operator*(double left, const expression<type_right>& right) {
+    multi multi_op;
+    return binary_expression(constant(left), multi_op, right);
 } 
 
 #endif
