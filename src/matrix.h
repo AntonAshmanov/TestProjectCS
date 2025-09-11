@@ -8,8 +8,11 @@ struct general_t{};
 
 template<template <typename> class E, typename matrix_storage_t>
 class matrix : public expression<matrix<E, matrix_storage_t>>{
-    matrix_storage_t storage_;
+    //matrix_storage_t storage_;
     public:
+        matrix_storage_t storage_;
+        matrix() = default;
+        matrix(std::initializer_list<std::initializer_list<double>> data) : storage_{data} {}
         void D() {
             self().D();
         }
@@ -21,11 +24,18 @@ class matrix : public expression<matrix<E, matrix_storage_t>>{
         const E<matrix_storage_t>& self() const { 
             return static_cast<const E<matrix_storage_t>&>(*this); 
         }
+
+        double operator()(size_t i, size_t j) const {
+            return storage_(i, j);
+        }
 };
 
 template<typename matrix_storage_t> 
 class diag_matrix : public matrix<diag_matrix, matrix_storage_t> {
     public:
+        diag_matrix() = default;
+        diag_matrix(std::initializer_list<std::initializer_list<double>> data) : 
+                    matrix<diag_matrix, matrix_storage_t>{std::move(data)} {}
         void D() {
             std::cout << "diag matrix" << std::endl;
         }
@@ -39,6 +49,10 @@ class general_matrix : public matrix<general_matrix, matrix_storage_t> {
         }
 };
 
+template<template <typename> class E, typename matrix_storage_t>
+struct get_storage_type {
+    typedef matrix<E, matrix_storage_t>::matrix_storage_type matrix_storage_type;
+};
 
 
 #endif

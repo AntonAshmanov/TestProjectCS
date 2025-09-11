@@ -12,7 +12,15 @@ struct math_object_base {
 };
 
 template<class E> 
-struct expression : math_object_base<E>{}; 
+struct expression : math_object_base<E>{
+    double operator()(size_t i, size_t j) {
+        return this->self()(i, j);
+    }
+
+    double operator()(size_t i, size_t j) const {
+        return this->self()(i, j);
+    }
+}; 
 
 struct add{};
 struct multi{};
@@ -25,7 +33,14 @@ expression<binary_expression<E1, OP, E2> >
                         const OP &op, const expression<E2> &expr2) : 
                     expr1(expr1.self()), op(op), expr2(expr2.self()){}
 
-    
+    double operator()(size_t i, size_t j) const {
+        if constexpr (std::is_same<OP, add>::value) {
+            return expr1(i, j) + expr2(i, j);
+        } else if (std::is_same<OP, multi>::value) {
+            return expr1(i, j) * expr2(i, j);
+        }
+    }
+
     private: 
         const E1 expr1; 
         const OP op; 
@@ -38,6 +53,11 @@ struct constant : expression<constant>
     double operator()(double x) const { 
         return value;
     } 
+
+    double operator()(size_t i, size_t j) const {
+        return value;
+    }
+
     private: 
     double value; 
 };
@@ -52,6 +72,12 @@ template<typename type_right>
 auto operator*(double left, const expression<type_right>& right) {
     multi multi_op;
     return binary_expression(constant(left), multi_op, right);
+} 
+
+template<typename type_left, typename type_right>
+auto operator*(const expression<type_left>& left, const expression<type_right>& right) {
+    multi multi_op;
+    return binary_expression(left, multi_op, right);
 } 
 
 #endif
