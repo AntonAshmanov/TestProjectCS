@@ -6,6 +6,7 @@
 #include <limits>
 #include <set>
 #include <algorithm>
+#include <functional>
 
 class csr {
 
@@ -28,6 +29,23 @@ class csr {
                 }
                 IA.push_back(ia_index_begin);
             } 
+            IA.push_back(AA.size());
+        }
+
+        csr(const csr& other_csr, std::function<bool(size_t, size_t)> func) {
+            for (size_t i = 0; i < other_csr.IA.size() - 1; ++i) {
+                size_t ind_begin = other_csr.IA[i];
+                size_t ind_end = other_csr.IA[i + 1];
+
+                size_t ia_index_begin = AA.size();
+                for (size_t j = ind_begin; j < ind_end; ++j) {
+                    if (func(i, other_csr.JA[j])) {
+                        AA.push_back(other_csr.AA[j]);
+                        JA.push_back(other_csr.JA[j]);
+                    }
+                }
+                IA.push_back(ia_index_begin);
+            }
             IA.push_back(AA.size());
         }
 
