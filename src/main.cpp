@@ -8,31 +8,27 @@
 
 int main() {
 
-    diag_matrix<csr> d({
-                            {1, 2, 3, 4},
-                            {5, 6, 7, 8},
-                            {9, 10, 11, 12},
-                            {13, 14, 15, 16}
+    general_matrix<csr> A({
+                            {1, 0, 0, 2, 0},
+                            {3, 4, 0, 5, 0},
+                            {6, 0, 7, 8, 9},
+                            {0, 0, 10, 11, 0},
+                            {0, 0, 0, 0, 12}
                           }
                         );
-    //D(d);
 
-    general_matrix<csr> g({
-                            {1, 2, 3, 4},
-                            {5, 6, 7, 8},
-                            {9, 10, 11, 12},
-                            {13, 14, 15, 16}
+    general_matrix<csr> B({
+                            {0, 0, 0, 0, 0},
+                            {0, 0, 0, 0, 0},
+                            {0, 0, 0, 0, 0},
+                            {1, 0, 0, 0, 0},
+                            {0, 0, 0, 0, 0}
                           }
-                        );
-    auto aa = g.storage_.get_aa();                    
-    //D(g);
-
-    auto madd = 5 * d + 5 * d;
-    //auto dm = 5 * d;
-
-    std::cout << madd(2, 3) << std::endl;
-
-    //std::cout << std::is_same<typename get_storage_type<diag_matrix>::matrix_storage_type 
+                        );                    
+    
+    print_matrix(A, A.get_size());
+    print_matrix(2*A + B, A.get_size());
+    print_matrix(2*A - 2*A, A.get_size());
 
     return 0;
 }

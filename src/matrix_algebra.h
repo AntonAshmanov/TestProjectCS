@@ -24,6 +24,7 @@ struct expression : math_object_base<E>{
 
 struct add{};
 struct multi{};
+struct min{};
 
 template<class E1, class OP, class E2> 
 struct binary_expression : 
@@ -38,6 +39,8 @@ expression<binary_expression<E1, OP, E2> >
             return expr1(i, j) + expr2(i, j);
         } else if (std::is_same<OP, multi>::value) {
             return expr1(i, j) * expr2(i, j);
+        } else if (std::is_same<OP, min>::value) {
+            return expr1(i, j) - expr2(i, j);
         }
     }
 
@@ -66,6 +69,12 @@ template<typename type_left, typename type_right>
 auto operator+(const expression<type_left>& left, const expression<type_right>& right) {
     add add_op;
     return binary_expression(left, add_op, right);
+}
+
+template<typename type_left, typename type_right>
+auto operator-(const expression<type_left>& left, const expression<type_right>& right) {
+    min min_op;
+    return binary_expression(left, min_op, right);
 } 
 
 template<typename type_right>
