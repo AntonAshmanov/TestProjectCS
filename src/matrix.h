@@ -16,19 +16,12 @@ class matrix : public expression<matrix<E, matrix_storage_t>>{
     protected:
     size_t N;
     public:
-        void add_element_while_init(double elem) {
-            storage_.add_element_while_init();
-        }
         matrix_storage_t storage_;
         matrix() = default;
         matrix(std::initializer_list<std::initializer_list<double>> data) : storage_{data}, N{data.size()} {}
         matrix(const matrix_storage_t& other_storage, 
                 std::function<bool(size_t, size_t)> func) 
                     : storage_{other_storage, func} {}
-        
-        void D() {
-            self().D();
-        }
         
         E<matrix_storage_t>& self(){ 
             return static_cast<E<matrix_storage_t>&>(*this); 
@@ -40,6 +33,10 @@ class matrix : public expression<matrix<E, matrix_storage_t>>{
 
         double operator()(size_t i, size_t j) const {
             return storage_(i, j);
+        }
+
+        double operator()(size_t i) const {
+            return self()(i);
         }
 
         size_t get_size() const {
@@ -57,9 +54,6 @@ class diag_matrix : public matrix<diag_matrix, matrix_storage_t> {
         //diag_matrix() = default;
         /*diag_matrix(std::initializer_list<std::initializer_list<double>> data) : 
                     matrix<diag_matrix, matrix_storage_t>{std::move(data)} {}*/
-        void D() {
-            std::cout << "diag matrix" << std::endl;
-        }
 };
 
 template<typename matrix_storage_t> 
@@ -73,9 +67,17 @@ class general_matrix : public matrix<general_matrix, matrix_storage_t> {
                     :  matrix<general_matrix, matrix_storage_t>(other_matrix.get_storage(), func) {
                         this->N = other_matrix.get_size();
                     }
-        void D() {
-            std::cout << "general matrix" << std::endl;
-        }
+};
+
+template<typename matrix_storage_t> 
+class sparse_vector : public matrix<sparse_vector, matrix_storage_t> {
+    public:
+        sparse_vector(std::initializer_list<double> data) : 
+                    matrix<sparse_vector, matrix_storage_t>{std::move(data)} {}
+
+        double operator()(size_t i) const {
+            return this->storage_(0, i);
+        }      
 };
 
 template<template <typename> class E, typename matrix_storage_t>
@@ -94,15 +96,7 @@ void print_matrix(const expression<T>& expr, size_t N) {
     }
 }
 
-template<typename matrix_storage_t>
-general_matrix<matrix_storage_t> upper_matrix(const general_matrix<matrix_storage_t>& A) {
 
-}
-
-template<typename matrix_storage_t>
-general_matrix<matrix_storage_t> lower_matrix(const general_matrix<matrix_storage_t>& A) {
-    
-}
 
 template<typename matrix_storage_t>
 auto factorization_matrix(const general_matrix<matrix_storage_t>& A) {
