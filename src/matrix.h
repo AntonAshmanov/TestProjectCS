@@ -91,6 +91,21 @@ class sparse_vector : public matrix<sparse_vector, matrix_storage_t> {
         double& operator()(size_t i) {
             return this->storage_(0, i);
         }
+
+        sparse_vector<matrix_storage_t>& operator=(sparse_vector<matrix_storage_t>& other) {
+            for (size_t i = 0; i < other.get_size(); ++i) {
+                this->storage_(0, i) = other(i);
+            }
+
+            return *this;
+        }
+
+        friend std::ostream& operator<< (std::ostream& out, const sparse_vector<matrix_storage_t>& vec) {
+            for (size_t i = 0; i < vec.get_size(); ++i) {
+                out << vec(i) << " ";
+            }
+            return out;
+        }
 };
 
 template<template <typename> class E, typename matrix_storage_t>
