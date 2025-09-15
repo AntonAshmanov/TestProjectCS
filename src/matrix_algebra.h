@@ -5,27 +5,28 @@ template<template <typename> class E, typename matrix_storage_t>
 class matrix;
 
 template<typename matrix_storage_t> 
+class diag_matrix;
+
+template<typename matrix_storage_t> 
 class sparse_vector;
 
-template<class O> 
-struct math_object_base { 
-    O& self(){ 
-        return static_cast<O&>(*this); 
-    } 
-    const O& self() const { 
-        return static_cast<const O&>(*this); 
-    } 
-};
-
 template<class E> 
-struct expression : math_object_base<E>{
+struct expression {
     double operator()(size_t i, size_t j) {
-        return this->self()(i, j);
+        return static_cast<E&>(*this)(i, j);
     }
 
     double operator()(size_t i, size_t j) const {
-        return this->self()(i, j);
+        return static_cast<const E&>(*this)(i, j);
     }
+
+    E& self(){ 
+        return static_cast<E&>(*this); 
+    }
+
+    const E& self() const { 
+        return static_cast<const E&>(*this); 
+    } 
 }; 
 
 struct add{};
@@ -41,6 +42,7 @@ expression<binary_expression<E1, OP, E2> >
                     expr1(expr1.self()), op(op), expr2(expr2.self()){}
 
     double operator()(size_t i, size_t j) const {
+        std::cout << "binary operation " << std::endl;
         if constexpr (std::is_same<OP, add>::value) {
             return expr1(i, j) + expr2(i, j);
         } else if (std::is_same<OP, multi>::value) {
@@ -81,9 +83,46 @@ expression<binary_expression<matrix<E1, matrix_storage_t>,
                       const multi& op,
                       const expression<matrix<E2, matrix_storage_t>> &expr2) : 
                     expr1(expr1.self()), op{op}, expr2(expr2.self()){}
+    double operator()(size_t i, size_t j) const {
+        double res = 0;
+        std::cout << "general_matrix * general_matrix " << std::endl;
+        for (size_t col = 0; col < expr1.get_size(); ++col) {
+            res += expr1(i, col) * expr2(col, j);
+        }
+
+        return res;
+    }
 
     private: 
         const matrix<E1, matrix_storage_t>& expr1; 
+        const multi op; 
+        const matrix<E2, matrix_storage_t>& expr2; 
+};
+
+template<template <typename> class E2, typename matrix_storage_t> 
+struct binary_expression<matrix<diag_matrix, matrix_storage_t>, 
+                        multi, 
+                        matrix<E2, matrix_storage_t>> : 
+expression<binary_expression<matrix<diag_matrix, matrix_storage_t>, 
+                             multi, 
+                             matrix<E2, matrix_storage_t>> > 
+{ 
+    binary_expression(const expression<matrix<diag_matrix, matrix_storage_t>> &expr1, 
+                      const multi& op,
+                      const expression<matrix<E2, matrix_storage_t>> &expr2) : 
+                    expr1(expr1.self()), op{op}, expr2(expr2.self()){}
+    double operator()(size_t i, size_t j) const {
+        double res = 0;
+        std::cout << "general_matrix * general_matrix " << std::endl;
+        for (size_t col = 0; col < expr1.get_size(); ++col) {
+            res += expr1(i, col) * expr2(col, j);
+        }
+
+        return res;
+    }
+
+    private: 
+        const matrix<diag_matrix, matrix_storage_t>& expr1; 
         const multi op; 
         const matrix<E2, matrix_storage_t>& expr2; 
 };
@@ -154,23 +193,6 @@ expression<binary_expression<binary_expression<matrix<E1, matrix_storage_t>,
                         matrix<E2, matrix_storage_t>>& expr1; 
         const multi op; 
         const matrix<sparse_vector, matrix_storage_t>& expr2; 
-};
-
-
-
-struct constant : expression<constant> 
-{ 
-    constant(double value) : value(value){} 
-    double operator()(double x) const { 
-        return value;
-    } 
-
-    double operator()(size_t i, size_t j) const {
-        return value;
-    }
-
-    private: 
-    double value; 
 };
 
 template<typename type_left, typename type_right>

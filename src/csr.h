@@ -51,7 +51,7 @@ class csr {
         }
 
         double x;
-        double operator()(size_t i, size_t j) {
+        double& operator()(size_t i, size_t j) {
             size_t ind_begin = IA[i];
             size_t ind_end = IA[i + 1];
 
@@ -61,7 +61,7 @@ class csr {
             auto it_end = std::next(JA.cbegin(), ind_end);
             auto it = std::find_if(it_begin, it_end, [j](auto ind){ return j == ind;});
 
-            return it != it_end ? AA[ind_begin + std::distance(it_begin, it)] : 0;
+            return AA[ind_begin + std::distance(it_begin, it)];
         }
 
         double operator()(size_t i, size_t j) const {

@@ -2,7 +2,7 @@
 #define MATRIX_H
 #include <functional>
 #include <initializer_list>
-#include "matrix_algebra.h"
+#include "matrix_algebra_new.h"
 
 struct diag_t{};
 struct general_t{};
@@ -54,6 +54,12 @@ class diag_matrix : public matrix<diag_matrix, matrix_storage_t> {
         //diag_matrix() = default;
         /*diag_matrix(std::initializer_list<std::initializer_list<double>> data) : 
                     matrix<diag_matrix, matrix_storage_t>{std::move(data)} {}*/
+        diag_matrix(const general_matrix<matrix_storage_t>& other_matrix) 
+                    :  matrix<diag_matrix, matrix_storage_t>(other_matrix.get_storage(), [](size_t i, size_t j){
+                        return i == j;
+                    }) {
+                        this->N = other_matrix.get_size();
+                    }            
 };
 
 template<typename matrix_storage_t> 
@@ -73,11 +79,18 @@ template<typename matrix_storage_t>
 class sparse_vector : public matrix<sparse_vector, matrix_storage_t> {
     public:
         sparse_vector(std::initializer_list<double> data) : 
-                    matrix<sparse_vector, matrix_storage_t>{std::move(data)} {}
+                    matrix<sparse_vector, matrix_storage_t>{std::move(data)} {
+                        this->N = data.size();
+                    }
+
 
         double operator()(size_t i) const {
             return this->storage_(0, i);
-        }      
+        }
+        
+        double& operator()(size_t i) {
+            return this->storage_(0, i);
+        }
 };
 
 template<template <typename> class E, typename matrix_storage_t>
@@ -101,7 +114,7 @@ void print_matrix(const expression<T>& expr, size_t N) {
 template<typename matrix_storage_t>
 auto factorization_matrix(const general_matrix<matrix_storage_t>& A) {
     return std::make_tuple(
-        general_matrix<matrix_storage_t>(A, [](size_t i, size_t j){ return j == i;}),
+        diag_matrix<matrix_storage_t>(A),
         general_matrix<matrix_storage_t>(A, [](size_t i, size_t j){ return j > i;}),
         general_matrix<matrix_storage_t>(A, [](size_t i, size_t j){ return j < i;}));
 }
