@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <initializer_list>
-#include "matrix_general_algebra.h"
 #include <cmath>
 #include <functional>
 
